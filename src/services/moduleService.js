@@ -53,7 +53,9 @@ exports.createUserModulesForUser = async (user) => {
   }));
 
   // Se desbloquea el primer modulo
-  userModulesData[0].status = 'no-iniciado';
+  if (userModulesData.length > 0) {
+    userModulesData[0].status = 'no-iniciado';
+  }
 
   return await UserModule.insertMany(userModulesData);
 };
