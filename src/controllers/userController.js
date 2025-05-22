@@ -10,7 +10,7 @@ exports.updateUserProfile = async (req, res, next) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const updatedUser = await userService.updateUserProfile(req.user.id, req.body);
+    const updatedUser = await userService.updateUser(req.user.id, req.body);
 
     res.json(success(updatedUser, 'Perfil actualizado con éxito'));
   } catch (err) {
