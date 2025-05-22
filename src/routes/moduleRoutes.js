@@ -13,7 +13,6 @@ const {
 router.post('/', auth, isAdmin, createModuleValidator, moduleController.createModule);
 router.put('/:id', auth, isAdmin, updateModuleValidator, moduleController.updateModule);
 
-// Obtener todos los módulos con información del usuario si está autenticado
 router.get('/', auth, moduleController.getModules);
 
 router.post('/:id/start', auth, moduleController.startModule);

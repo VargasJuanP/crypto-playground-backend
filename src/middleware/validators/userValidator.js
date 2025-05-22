@@ -5,7 +5,7 @@ exports.registerValidator = [
 
   body('email').trim().isEmail().normalizeEmail(),
 
-  body('password').isStrongPassword(),
+  body('password').exists(),
 ];
 
 exports.loginValidator = [
@@ -19,5 +19,5 @@ exports.updateUserValidator = [
 
   body('email').optional().trim().isEmail().normalizeEmail(),
 
-  body('password').optional().isStrongPassword(),
+  body('password').optional(),
 ];

@@ -20,11 +20,9 @@ router.post('/profile/image', auth, uploadSingle, userController.uploadProfileIm
 
 // Obtener módulos del usuario
 router.get('/modules', auth, userController.getUserModules);
-router.get('/:id/modules', auth, userController.getUserModules);
 
 // Obtener submódulos del usuario
 router.get('/submodules', auth, userController.getUserSubModules);
-router.get('/:id/submodules', auth, userController.getUserSubModules);
 
 // Eliminar usuario (solo admin o propio usuario)
 router.delete('/', auth, userController.deleteUser);

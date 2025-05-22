@@ -37,38 +37,32 @@ exports.updateGlobalProgress = async (user) => {
   return await this.updateUser(user, { globalProgress: (completados / modules.length) * 100 });
 };
 
-exports.getUserModules = async (userId) => {
-  // Obtener todos los módulos disponibles
-  const allModules = await Module.find().sort({ order: 1 });
+exports.getUserModules = async (user) => {
+  const modules = await ModuleService.getModules();
+  const userModules = await ModuleService.getUserModules(user);
 
-  // Obtener los módulos iniciados por el usuario
-  const userModules = await UserModule.find({ userId }).lean();
   const userModulesMap = {};
-
-  userModules.forEach((um) => {
-    userModulesMap[um.moduleId.toString()] = um;
+  userModules.forEach((userModule) => {
+    userModulesMap[userModule.module.toString()] = userModule;
   });
 
-  // Combinar información y devolver todos los módulos con información del usuario si existe
-  return allModules.map((module) => {
-    const userModule = userModulesMap[module._id.toString()];
+  const combinedModules = modules.map((module) => {
+    const moduleId = module._id.toString();
+    const userModule = userModulesMap[moduleId];
 
     return {
       id: module._id,
       title: module.title,
       description: module.description,
-      level: module.level,
       duration: module.duration,
-      order: module.order,
-      subModulesCount: module.subModules ? module.subModules.length : 0,
-      hasChallenge: !!module.challengeId,
-      progress: userModule ? userModule.progress : 0,
-      status: userModule ? userModule.status : 'not-started',
-      startDate: userModule ? userModule.startDate : null,
-      completionDate: userModule ? userModule.completionDate : null,
-      lastActivity: userModule ? userModule.lastActivity : null,
+      place: module.place,
+      level: module.level,
+      status: userModule.status,
+      progress: userModule.progress,
     };
   });
+
+  return combinedModules;
 };
 
 // Reemplazar el método getUserSubModules en userService.js por esta versión:

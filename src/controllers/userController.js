@@ -43,14 +43,8 @@ exports.getUserProfile = async (req, res, next) => {
 
 exports.getUserModules = async (req, res, next) => {
   try {
-    const userId = req.params.id || req.user.id;
+    const modules = await userService.getUserModules(req.user.id);
 
-    // Verificar si el usuario actual puede acceder a estos módulos
-    if (req.params.id && req.user.role !== 'admin' && req.params.id !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para ver estos módulos' });
-    }
-
-    const modules = await userService.getUserModules(userId);
     res.json(success(modules, 'Módulos del usuario obtenidos con éxito'));
   } catch (err) {
     next(err);
@@ -59,15 +53,8 @@ exports.getUserModules = async (req, res, next) => {
 
 exports.getUserSubModules = async (req, res, next) => {
   try {
-    const userId = req.params.id || req.user.id;
-    const moduleId = req.query.moduleId || null;
+    const subModules = await userService.getUserSubModules(req.user.id);
 
-    // Verificar si el usuario actual puede acceder a estos submódulos
-    if (req.params.id && req.user.role !== 'admin' && req.params.id !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para ver estos submódulos' });
-    }
-
-    const subModules = await userService.getUserSubModules(userId, moduleId);
     res.json(success(subModules, 'Submódulos del usuario obtenidos con éxito'));
   } catch (err) {
     next(err);
