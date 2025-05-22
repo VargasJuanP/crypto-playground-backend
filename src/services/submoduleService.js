@@ -64,6 +64,16 @@ exports.getUserSubModulesByModuleId = async (user, module) => {
   return await UserSubModule.find({ user, subModule: { $in: subModules.map((sm) => sm._id) } });
 };
 
+exports.getFullSubModulesByModuleId = async (user, module) => {
+  const userSubModules = await this.getUserSubModulesByModuleId(user, module); 
+  const subModules = await this.getSubModulesByModuleId(module);
+
+  console.log(userSubModules);
+  console.log(subModules);
+
+  return subModules
+};
+
 exports.completeSubModulesFromModule = async (user, module) => {
   const userSubModules = await this.getUserSubModulesByModuleId(user, module);
 

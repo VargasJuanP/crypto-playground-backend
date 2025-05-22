@@ -5,13 +5,13 @@ const submoduleController = require('../controllers/submoduleController');
 const auth = require('../middleware/auth');
 
 const { isAdmin } = require('../middleware/roleValidator');
-const {
-  createSubmoduleValidator,
-  updateSubmoduleValidator,
-} = require('../middleware/validators/submoduleValidator');
+const { createSubmoduleValidator, updateSubmoduleValidator } = require('../middleware/validators/submoduleValidator');
 
 router.post('/', auth, isAdmin, createSubmoduleValidator, submoduleController.createSubModule);
+
 router.put('/:id', auth, isAdmin, updateSubmoduleValidator, submoduleController.updateSubModule);
+
+router.get('/:id', auth, submoduleController.getSubModules);
 
 router.post('/:id/start', auth, submoduleController.startSubModule);
 router.post('/:id/complete', auth, submoduleController.completeSubModule);

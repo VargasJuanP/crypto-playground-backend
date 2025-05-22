@@ -212,15 +212,6 @@ exports.uploadProfileImage = async (userId, file) => {
               { new: true }
             ).select('-password');
 
-            // Registrar actividad
-            await ActivityLog.create({
-              userId,
-              action: 'profile_image_updated',
-              entityType: 'user',
-              entityId: userId,
-              details: { imageUrl: result.secure_url },
-            });
-
             // Si había una imagen anterior, eliminarla
             if (oldImagePublicId) {
               try {
