@@ -1,7 +1,6 @@
 const Challenge = require('../models/Challenge');
 const ChallengeSolution = require('../models/ChallengeSolution');
 const UserChallenge = require('../models/UserChallenge');
-const UserProgress = require('../models/UserProgress');
 const Module = require('../models/Module');
 const ActivityLog = require('../models/ActivityLog');
 const moduleService = require('./moduleService');
@@ -274,16 +273,6 @@ exports.submitChallengeSolution = async (userId, challengeId, solutionData) => {
 
     // Incrementar contador de completados en el desafío
     await Challenge.findByIdAndUpdate(challengeId, { $inc: { completionCount: 1 } });
-
-    // Incrementar contador de desafíos completados del usuario
-    await UserProgress.findOneAndUpdate(
-      { userId },
-      {
-        $inc: { completedChallenges: 1 },
-        $set: { lastUpdated: new Date() },
-      },
-      { upsert: true }
-    );
 
     // Registrar actividad de desafío completado
     await ActivityLog.create({

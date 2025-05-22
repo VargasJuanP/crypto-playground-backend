@@ -1,43 +1,23 @@
 const { body } = require('express-validator');
 
 exports.registerValidator = [
-  body('username')
-    .trim()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('El nombre de usuario debe tener entre 3 y 30 caracteres'),
+  body('username').trim().isLength({ min: 1, max: 30 }),
 
-  body('email')
-    .trim()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Debe proporcionar un correo electrónico válido'),
+  body('email').trim().isEmail().normalizeEmail(),
 
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('La contraseña debe tener al menos 6 caracteres'),
+  body('password').isStrongPassword(),
 ];
 
 exports.loginValidator = [
-  body('email').isEmail().withMessage('Debe proporcionar un correo electrónico válido'),
-  body('password').exists().withMessage('La contraseña es requerida'),
+  body('email').trim().isEmail().normalizeEmail(),
+
+  body('password').exists(),
 ];
 
 exports.updateUserValidator = [
-  body('username')
-    .optional()
-    .trim()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('El nombre de usuario debe tener entre 3 y 30 caracteres'),
+  body('username').optional().trim().isLength({ min: 1, max: 30 }),
 
-  body('email')
-    .optional()
-    .trim()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Debe proporcionar un correo electrónico válido'),
+  body('email').optional().trim().isEmail().normalizeEmail(),
 
-  body('password')
-    .optional()
-    .isLength({ min: 6 })
-    .withMessage('La contraseña debe tener al menos 6 caracteres'),
+  body('password').optional().isStrongPassword(),
 ];

@@ -2,9 +2,24 @@ const userService = require('../services/userService');
 const { validationResult } = require('express-validator');
 const { success } = require('../utils/responseFormatter');
 
+exports.updateUserProfile = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const updatedUser = await userService.updateUserProfile(req.user.id, req.body);
+
+    res.json(success(updatedUser, 'Perfil actualizado con éxito'));
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getAllUsers = async (req, res, next) => {
   try {
-    // Solo admins pueden ver todos los usuarios
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
@@ -18,39 +33,9 @@ exports.getAllUsers = async (req, res, next) => {
 
 exports.getUserProfile = async (req, res, next) => {
   try {
-    const userId = req.params.id || req.user.id;
+    const profile = await userService.getUserProfile(req.user.id);
 
-    // Verificar si el usuario actual puede acceder a este perfil
-    if (req.params.id && req.user.role !== 'admin' && req.params.id !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para ver este perfil' });
-    }
-
-    const profile = await userService.getUserProfile(userId);
     res.json(success(profile, 'Perfil de usuario obtenido con éxito'));
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.updateUserProfile = async (req, res, next) => {
-  try {
-    // Validar inputs
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const userId = req.params.id || req.user.id;
-
-    // Verificar si el usuario actual puede actualizar este perfil
-    if (req.params.id && req.user.role !== 'admin' && req.params.id !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para actualizar este perfil' });
-    }
-
-    const isAdmin = req.user.role === 'admin';
-    const updatedUser = await userService.updateUserProfile(userId, req.body, isAdmin);
-
-    res.json(success(updatedUser, 'Perfil actualizado con éxito'));
   } catch (err) {
     next(err);
   }
@@ -89,58 +74,9 @@ exports.getUserSubModules = async (req, res, next) => {
   }
 };
 
-exports.getUserChallenges = async (req, res, next) => {
-  try {
-    const userId = req.params.id || req.user.id;
-
-    // Verificar si el usuario actual puede acceder a estos desafíos
-    if (req.params.id && req.user.role !== 'admin' && req.params.id !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para ver estos desafíos' });
-    }
-
-    const challenges = await userService.getUserChallenges(userId);
-    res.json(success(challenges, 'Desafíos del usuario obtenidos con éxito'));
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getUserSolutions = async (req, res, next) => {
-  try {
-    const userId = req.params.id || req.user.id;
-    const challengeId = req.query.challengeId || null;
-
-    // Verificar si el usuario actual puede acceder a estas soluciones
-    if (req.params.id && req.user.role !== 'admin' && req.params.id !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para ver estas soluciones' });
-    }
-
-    const solutions = await userService.getUserSolutions(userId, challengeId);
-    res.json(success(solutions, 'Soluciones del usuario obtenidas con éxito'));
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getUserStatistics = async (req, res, next) => {
-  try {
-    const userId = req.params.id || req.user.id;
-
-    // Verificar si el usuario actual puede acceder a estas estadísticas
-    if (req.params.id && req.user.role !== 'admin' && req.params.id !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para ver estas estadísticas' });
-    }
-
-    const stats = await userService.getUserStatistics(userId);
-    res.json(success(stats, 'Estadísticas del usuario obtenidas con éxito'));
-  } catch (err) {
-    next(err);
-  }
-};
-
 exports.deleteUser = async (req, res, next) => {
   try {
-    const userId = req.params.id;
+    const userId = req.params.id || req.user.id;
 
     // Solo admins pueden eliminar cualquier usuario
     // Los usuarios normales solo pueden eliminar su propia cuenta

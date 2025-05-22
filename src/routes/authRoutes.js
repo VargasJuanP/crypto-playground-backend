@@ -13,7 +13,4 @@ router.post('/login', loginValidator, authController.login);
 // Obtener usuario actual
 router.get('/me', auth, authController.getMe);
 
-// Actualizar token
-router.post('/refresh-token', auth, authController.refreshToken);
-
 module.exports = router;

@@ -7,32 +7,46 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
-      trim: true,
-      lowercase: true,
     },
     password: {
       type: String,
       required: true,
     },
-    profileImage: {
-      type: String,
-      default: 'https://www.w3schools.com/w3images/avatar2.png',
+    globalProgress: {
+      type: Number,
+      default: 0,
+    },
+    points: {
+      type: Number,
+      default: 0,
+    },
+    streak: {
+      type: Number,
+      default: 0,
     },
     role: {
       type: String,
       enum: ['user', 'admin'],
       default: 'user',
     },
+    profileImage: {
+      type: String,
+      default:
+        'https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3396.jpg',
+    },
     level: {
       type: String,
-      enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
-      default: 'Beginner',
+      enum: ['Principiante', 'Intermedio', 'Avanzado'],
+      default: 'Principiante',
+    },
+    achievements: {
+      type: [String],
+      default: [],
     },
     lastActivity: {
       type: Date,

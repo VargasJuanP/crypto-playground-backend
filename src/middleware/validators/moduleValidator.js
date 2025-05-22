@@ -1,25 +1,25 @@
 const { body } = require('express-validator');
 
-exports.moduleValidator = [
-  body('title')
-    .trim()
-    .isLength({ min: 3, max: 100 })
-    .withMessage('El título debe tener entre 3 y 100 caracteres'),
+exports.createModuleValidator = [
+  body('title').trim().isLength({ min: 1, max: 100 }),
 
-  body('description')
-    .trim()
-    .isLength({ min: 10 })
-    .withMessage('La descripción debe tener al menos 10 caracteres'),
+  body('description').trim().isLength({ min: 1, max: 100 }),
 
-  body('level')
-    .isIn(['Beginner', 'Intermediate', 'Advanced', 'Expert'])
-    .withMessage('El nivel debe ser Beginner, Intermediate, Advanced o Expert'),
+  body('duration').trim().isLength({ min: 1, max: 30 }),
 
-  body('duration').trim().notEmpty().withMessage('La duración es requerida'),
+  body('level').isIn(['Principiante', 'Intermedio', 'Avanzado']),
 
-  body('order').isInt({ min: 1 }).withMessage('El orden debe ser un número entero positivo'),
+  body('place').isInt({ min: 1 }),
+];
 
-  body('subModules').optional().isArray().withMessage('subModules debe ser un array de IDs'),
+exports.updateModuleValidator = [
+  body('title').optional().trim().isLength({ min: 1, max: 100 }),
 
-  body('challengeId').optional().isMongoId().withMessage('challengeId debe ser un ID válido'),
+  body('description').optional().trim().isLength({ min: 1, max: 100 }),
+
+  body('duration').optional().trim().isLength({ min: 1, max: 30 }),
+
+  body('level').optional().isIn(['Principiante', 'Intermedio', 'Avanzado']),
+
+  body('place').optional().isInt({ min: 1 }),
 ];

@@ -21,12 +21,9 @@ module.exports = async (req, res, next) => {
       return res.status(401).json({ message: 'Token no válido' });
     }
 
-    // Actualizar última actividad
-    user.lastActivity = new Date();
-    await user.save();
-
     // Agregar usuario al request
     req.user = user;
+
     next();
   } catch (error) {
     res.status(401).json({ message: 'Token no válido' });

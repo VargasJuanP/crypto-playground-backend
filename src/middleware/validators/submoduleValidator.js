@@ -1,10 +1,17 @@
+const mongoose = require('mongoose');
+
 const { body } = require('express-validator');
 
-exports.submoduleValidator = [
-  body('title')
-    .trim()
-    .isLength({ min: 3, max: 100 })
-    .withMessage('El título debe tener entre 3 y 100 caracteres'),
+exports.createSubmoduleValidator = [
+  body('module').custom((value) => mongoose.Types.ObjectId.isValid(value)),
 
-  body('order').isInt({ min: 1 }).withMessage('El orden debe ser un número entero positivo'),
+  body('title').trim().isLength({ min: 1, max: 100 }),
+
+  body('place').isInt({ min: 1 }),
+];
+
+exports.updateSubmoduleValidator = [
+  body('title').trim().optional().isLength({ min: 1, max: 100 }),
+
+  body('place').optional().isInt({ min: 1 }),
 ];
