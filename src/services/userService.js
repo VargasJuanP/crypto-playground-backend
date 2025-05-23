@@ -9,7 +9,15 @@ const User = require('../models/User');
 const UserChallenge = require('../models/UserChallenge');
 const UserSubModule = require('../models/UserSubModule');
 
+const bcrypt = require('bcryptjs');
+
 exports.updateUser = async (userId, userData) => {
+  
+  if (userData.password) {
+    const salt = await bcrypt.genSalt(10);
+    userData.password = await bcrypt.hash(userData.password, salt);
+  }
+
   return await User.findByIdAndUpdate(
     userId,
     { $set: userData },
@@ -151,11 +159,6 @@ exports.deleteUser = async (userId) => {
 
   // Eliminar todos los datos relacionados
   await Promise.all([
-    UserModule.deleteMany({ userId }),
-    UserSubModule.deleteMany({ userId }),
-    UserChallenge.deleteMany({ userId }),
-    ChallengeSolution.deleteMany({ userId }),
-    ActivityLog.deleteMany({ userId }),
     User.findByIdAndDelete(userId),
   ]);
 

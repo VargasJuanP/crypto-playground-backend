@@ -60,7 +60,17 @@ exports.getChallenges = async (userId, filters = {}) => {
     const userChallenge = userChallengesMap[challenge._id.toString()];
     
     return {
-      ...challenge.toObject(),
+      id: challenge._id,
+      title: challenge.title,
+      description: challenge.description,
+      difficulty: challenge.difficulty,
+      category: challenge.category,
+      completions: challenge.completions,
+      totalAttempts: challenge.totalAttempts,
+      points: challenge.points,
+      timeEstimate: challenge.timeEstimate,
+      status: challenge.status,
+      icon: challenge.icon,
       userStatus: userChallenge ? userChallenge.status : 'no-iniciado',
       attempts: userChallenge ? userChallenge.attempts : 0
     };
