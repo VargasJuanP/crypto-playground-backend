@@ -2,46 +2,73 @@ const mongoose = require('mongoose');
 
 const ChallengeSchema = new mongoose.Schema(
   {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true
+    },
     title: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
     description: {
       type: String,
-      required: true,
+      required: true
     },
-    level: {
+    difficulty: {
       type: String,
-      enum: ['beginner', 'intermediate', 'advanced', 'expert'],
-      required: true,
+      enum: ['principiante', 'intermedio', 'avanzado', 'experto'],
+      required: true
     },
-    duration: {
+    category: {
       type: String,
-      required: true,
+      required: true
     },
-    content: {
-      type: String,
-      required: true,
-    },
-    submissionCount: {
+    completions: {
       type: Number,
-      default: 0,
+      default: 0
     },
-    completionCount: {
+    totalAttempts: {
       type: Number,
-      default: 0,
+      default: 0
     },
-    validationCriteria: {
-      type: String,
+    points: {
+      type: Number,
       required: true,
+      min: 0
     },
-    testCases: [
-      {
-        input: String,
-        expectedOutput: String,
-      },
-    ],
+    timeEstimate: {
+      type: String,
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ['disponible', 'bloqueado', 'mantenimiento', 'archivado'],
+      default: 'disponible'
+    },
+    dateAdded: {
+      type: String,  // Formato "YYYY-MM-DD"
+      required: true
+    },
+    icon: {
+      type: String,
+      required: true
+    },
+    examples: [{
+      input: String,
+      output: String,
+      explanation: String
+    }],
+    constraints: [String],
+    hint: String,
+    expectedOutput: String,
+    inputData: String,
+    starterCode: {
+      python: String,
+      javascript: String
+    }
   },
   { timestamps: true }
 );

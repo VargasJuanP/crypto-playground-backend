@@ -121,6 +121,6 @@ exports.updateModuleProgress = async (user, module) => {
   const completados = subModules.filter((sm) => sm.status === 'completado').length;
 
   return await this.updateUserModule(user, module, {
-    progress: (completados / subModules.length) * 100,
+    progress: Math.round((completados / subModules.length) * 100),
   });
 };

@@ -34,7 +34,7 @@ exports.updateGlobalProgress = async (user) => {
 
   const completados = modules.filter((m) => m.status === 'completado').length;
 
-  return await this.updateUser(user, { globalProgress: (completados / modules.length) * 100 });
+  return await this.updateUser(user, { globalProgress: Math.round((completados / modules.length) * 100) });
 };
 
 exports.getUserModules = async (user) => {
