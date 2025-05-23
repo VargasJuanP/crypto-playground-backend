@@ -1,0 +1,10 @@
+services:
+  crypto-playground-api:
+    build: .
+    image: crypto-playground-api
+    container_name: crypto-playground-api
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env

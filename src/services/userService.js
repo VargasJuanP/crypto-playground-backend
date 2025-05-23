@@ -182,7 +182,6 @@ exports.updateUserStreak = async (userId) => {
   const lastActivityDate = new Date(user.lastActivity);
   const currentDate = new Date();
 
-  s;
   const lastActivityDay = new Date(
     lastActivityDate.getFullYear(),
     lastActivityDate.getMonth(),

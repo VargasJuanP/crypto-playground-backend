@@ -28,8 +28,6 @@ exports.createUserSubModulesForModule = async (user, module) => {
     subModule: subModule._id,
   }));
 
-  console.log(userSubModulesData);
-
   return await UserSubModule.insertMany(userSubModulesData);
 };
 
