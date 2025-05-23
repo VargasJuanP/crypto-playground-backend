@@ -70,10 +70,25 @@ exports.getFullSubModulesByModuleId = async (user, module) => {
   const userSubModules = await this.getUserSubModulesByModuleId(user, module); 
   const subModules = await this.getSubModulesByModuleId(module);
 
-  console.log(userSubModules);
-  console.log(subModules);
+  const userSubModulesMap = {};
+  userSubModules.forEach(userSubModule => {
+    userSubModulesMap[userSubModule.subModule.toString()] = userSubModule;
+  });
 
-  return subModules
+  const combinedSubModules = subModules.map(subModule => {
+    const subModuleId = subModule._id.toString();
+    const userSubModule = userSubModulesMap[subModuleId];
+    
+    return {
+      id: subModule._id,
+      module: subModule.module,
+      title: subModule.title,
+      place: subModule.place,
+      status: userSubModule.status
+    };
+  });
+
+  return combinedSubModules;
 };
 
 exports.completeSubModulesFromModule = async (user, module) => {
