@@ -1,3 +1,4 @@
+// models/Challenge.js
 const mongoose = require('mongoose');
 
 const ChallengeSchema = new mongoose.Schema(
@@ -48,14 +49,6 @@ const ChallengeSchema = new mongoose.Schema(
       enum: ['disponible', 'bloqueado', 'mantenimiento', 'archivado'],
       default: 'disponible'
     },
-    dateAdded: {
-      type: String,  // Formato "YYYY-MM-DD"
-      required: true
-    },
-    icon: {
-      type: String,
-      required: true
-    },
     examples: [{
       input: String,
       output: String,
@@ -63,14 +56,27 @@ const ChallengeSchema = new mongoose.Schema(
     }],
     constraints: [String],
     hint: String,
-    expectedOutput: String,
-    inputData: String,
     starterCode: {
       python: String,
       javascript: String
+    },
+    tests: {
+      python: {
+        type: String,
+        description: "Archivo de tests para Python que verifica la solución del desafío"
+      },
+      javascript: {
+        type: String,
+        description: "Archivo de tests para JavaScript que verifica la solución del desafío"
+      }
     }
   },
   { timestamps: true }
 );
+
+ChallengeSchema.index({ difficulty: 1 });
+ChallengeSchema.index({ category: 1 });
+ChallengeSchema.index({ status: 1 });
+ChallengeSchema.index({ points: 1 });
 
 module.exports = mongoose.model('Challenge', ChallengeSchema);

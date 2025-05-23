@@ -1,32 +1,10 @@
-const challengeService = require('../services/challengeService');
+// controllers/challengeController.js
 const { validationResult } = require('express-validator');
+const challengeService = require('../services/challengeService');
 const { success } = require('../utils/responseFormatter');
-
-exports.getAllChallenges = async (req, res, next) => {
-  try {
-    const userId = req.user ? req.user.id : null;
-    const challenges = await challengeService.getAllChallenges(userId);
-    res.json(success(challenges, 'Desafíos obtenidos con éxito'));
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getChallengeById = async (req, res, next) => {
-  try {
-    const challengeId = req.params.id;
-    const userId = req.user ? req.user.id : null;
-
-    const challenge = await challengeService.getChallengeById(challengeId, userId);
-    res.json(success(challenge, 'Desafío obtenido con éxito'));
-  } catch (err) {
-    next(err);
-  }
-};
 
 exports.createChallenge = async (req, res, next) => {
   try {
-    // Validar inputs
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -41,27 +19,32 @@ exports.createChallenge = async (req, res, next) => {
 
 exports.updateChallenge = async (req, res, next) => {
   try {
-    // Validar inputs
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const challengeId = req.params.id;
-    const challenge = await challengeService.updateChallenge(challengeId, req.body);
-
-    res.json(success(challenge, 'Desafío actualizado con éxito'));
+    const challenge = await challengeService.updateChallenge(req.params.id, req.body);
+    res.status(200).json(success(challenge, 'Desafío actualizado con éxito'));
   } catch (err) {
     next(err);
   }
 };
 
-exports.deleteChallenge = async (req, res, next) => {
+exports.getChallenge = async (req, res, next) => {
   try {
-    const challengeId = req.params.id;
-    const result = await challengeService.deleteChallenge(challengeId);
+    const challenge = await challengeService.getChallengeById(req.params.id, req.user.id);
+    res.status(200).json(success(challenge, 'Desafío obtenido con éxito'));
+  } catch (err) {
+    next(err);
+  }
+};
 
-    res.json(success(null, result.message));
+exports.getChallenges = async (req, res, next) => {
+  try {
+    const { category, difficulty, status } = req.query;
+    const challenges = await challengeService.getChallenges(req.user.id, { category, difficulty, status });
+    res.status(200).json(success(challenges, 'Desafíos obtenidos con éxito'));
   } catch (err) {
     next(err);
   }
@@ -69,66 +52,32 @@ exports.deleteChallenge = async (req, res, next) => {
 
 exports.startChallenge = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const challengeId = req.params.id;
-
-    const userChallenge = await challengeService.startChallenge(userId, challengeId);
-    res.json(success(userChallenge, 'Desafío iniciado con éxito'));
+    const userChallenge = await challengeService.startChallenge(req.user.id, req.params.id);
+    res.status(200).json(success(userChallenge, 'Desafío iniciado con éxito'));
   } catch (err) {
     next(err);
   }
 };
 
-exports.submitChallengeSolution = async (req, res, next) => {
+exports.submitChallenge = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const challengeId = req.params.id;
-    const solutionData = req.body;
-
-    if (!solutionData.solution) {
-      return res.status(400).json({ message: 'La solución es requerida' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    const result = await challengeService.submitChallengeSolution(
-      userId,
-      challengeId,
-      solutionData
-    );
-
-    if (result.passed) {
-      res.json(success(result, '¡Felicidades! Tu solución es correcta'));
+    const { code, language } = req.body;
+    const result = await challengeService.submitChallenge(req.user.id, req.params.id, code, language);
+    
+    if (result.success) {
+      res.status(200).json(success(result, 'Solución correcta'));
     } else {
-      res.json(success(result, 'La solución es incorrecta. ¡Inténtalo de nuevo!'));
+      res.status(400).json({ 
+        success: false, 
+        message: 'Solución incorrecta', 
+        details: result.details 
+      });
     }
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getSolutionsForChallenge = async (req, res, next) => {
-  try {
-    const challengeId = req.params.id;
-    const userId = req.query.userId;
-
-    // Verificar permisos si se pide soluciones de un usuario específico
-    if (userId && req.user.id !== userId && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'No tienes permiso para ver estas soluciones' });
-    }
-
-    const solutions = await challengeService.getSolutionsForChallenge(challengeId, userId);
-    res.json(success(solutions, 'Soluciones obtenidas con éxito'));
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.markSolutionAsFavorite = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const solutionId = req.params.id;
-
-    const solution = await challengeService.markSolutionAsFavorite(userId, solutionId);
-    res.json(success(solution, 'Solución marcada como favorita con éxito'));
   } catch (err) {
     next(err);
   }

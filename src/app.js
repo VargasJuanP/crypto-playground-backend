@@ -9,7 +9,9 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const moduleRoutes = require('./routes/moduleRoutes');
 const submoduleRoutes = require('./routes/submoduleRoutes');
-//const challengeRoutes = require('./routes/challengeRoutes');
+
+const challengeRoutes = require('./routes/challengeRoutes');
+const userChallengeRoutes = require('./routes/userChallengeRoutes');
 
 // Inicializar app
 const app = express();
@@ -27,7 +29,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/submodules', submoduleRoutes);
-//app.use('/api/challenges', challengeRoutes);
+app.use('/api/challenges', challengeRoutes);
+app.use('/api/user-challenges', userChallengeRoutes);
 
 // Middleware de manejo de errores
 app.use(errorHandler);

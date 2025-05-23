@@ -1,49 +1,50 @@
+// models/UserChallenge.js
 const mongoose = require('mongoose');
 
 const UserChallengeSchema = new mongoose.Schema(
   {
-    userId: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    challengeId: {
+    challenge: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Challenge',
       required: true,
     },
     status: {
       type: String,
-      enum: ['not-started', 'in-progress', 'completed'],
-      default: 'not-started',
+      enum: ['no-iniciado', 'en-progreso', 'completado'],
+      default: 'no-iniciado',
     },
     attempts: {
       type: Number,
-      default: 0,
+      default: 0
     },
-    completed: {
-      type: Boolean,
-      default: false,
-    },
-    bestSolutionId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'ChallengeSolution',
-    },
-    startDate: {
+    completedAt: {
       type: Date,
+      default: null
     },
-    completionDate: {
+    lastAttemptAt: {
       type: Date,
+      default: null
     },
-    lastActivity: {
-      type: Date,
-      default: Date.now,
+    lastSubmittedCode: {
+      type: String,
+      default: null
     },
+    language: {
+      type: String,
+      enum: ['python', 'javascript'],
+      default: 'python'
+    }
   },
   { timestamps: true }
 );
 
-// Índice compuesto para búsquedas eficientes
-UserChallengeSchema.index({ userId: 1, challengeId: 1 }, { unique: true });
+UserChallengeSchema.index({ user: 1, challenge: 1 }, { unique: true });
+UserChallengeSchema.index({ user: 1 });
+UserChallengeSchema.index({ challenge: 1 });
 
 module.exports = mongoose.model('UserChallenge', UserChallengeSchema);
