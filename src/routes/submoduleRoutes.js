@@ -5,7 +5,10 @@ const submoduleController = require('../controllers/submoduleController');
 const auth = require('../middleware/auth');
 
 const { isAdmin } = require('../middleware/roleValidator');
-const { createSubmoduleValidator, updateSubmoduleValidator } = require('../middleware/validators/submoduleValidator');
+const {
+  createSubmoduleValidator,
+  updateSubmoduleValidator,
+} = require('../middleware/validators/submoduleValidator');
 
 router.post('/', auth, isAdmin, createSubmoduleValidator, submoduleController.createSubModule);
 

@@ -20,25 +20,25 @@ const UserChallengeSchema = new mongoose.Schema(
     },
     attempts: {
       type: Number,
-      default: 0
+      default: 0,
     },
     completedAt: {
       type: Date,
-      default: null
+      default: null,
     },
     lastAttemptAt: {
       type: Date,
-      default: null
+      default: null,
     },
     lastSubmittedCode: {
       type: String,
-      default: null
+      default: null,
     },
     language: {
       type: String,
       enum: ['python', 'javascript'],
-      default: 'python'
-    }
+      default: 'python',
+    },
   },
   { timestamps: true }
 );

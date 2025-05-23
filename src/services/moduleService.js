@@ -110,6 +110,9 @@ exports.completeModule = async (user, module) => {
 
     // Actualizar el progreso global
     await UserService.updateGlobalProgress(user);
+
+    // Actualizar racha
+    await UserService.updateUserStreak(user);
   }
 
   return userModule;

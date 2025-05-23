@@ -40,7 +40,10 @@ exports.updateSubModule = async (req, res, next) => {
 
 exports.getSubModules = async (req, res, next) => {
   try {
-    const subModules = await submoduleService.getFullSubModulesByModuleId(req.user.id, req.params.id);
+    const subModules = await submoduleService.getFullSubModulesByModuleId(
+      req.user.id,
+      req.params.id
+    );
 
     res.status(200).json(success(subModules, 'Submódulos obtenidos con éxito'));
   } catch (err) {

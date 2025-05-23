@@ -7,69 +7,71 @@ const ChallengeSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      trim: true
+      trim: true,
     },
     title: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     description: {
       type: String,
-      required: true
+      required: true,
     },
     difficulty: {
       type: String,
       enum: ['principiante', 'intermedio', 'avanzado', 'experto'],
-      required: true
+      required: true,
     },
     category: {
       type: String,
-      required: true
+      required: true,
     },
     completions: {
       type: Number,
-      default: 0
+      default: 0,
     },
     totalAttempts: {
       type: Number,
-      default: 0
+      default: 0,
     },
     points: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
     timeEstimate: {
       type: String,
-      required: true
+      required: true,
     },
     status: {
       type: String,
       enum: ['disponible', 'bloqueado', 'mantenimiento', 'archivado'],
-      default: 'disponible'
+      default: 'disponible',
     },
-    examples: [{
-      input: String,
-      output: String,
-      explanation: String
-    }],
+    examples: [
+      {
+        input: String,
+        output: String,
+        explanation: String,
+      },
+    ],
     constraints: [String],
     hint: String,
     starterCode: {
       python: String,
-      javascript: String
+      javascript: String,
     },
     tests: {
       python: {
         type: String,
-        description: "Archivo de tests para Python que verifica la solución del desafío"
+        description: 'Archivo de tests para Python que verifica la solución del desafío',
       },
       javascript: {
         type: String,
-        description: "Archivo de tests para JavaScript que verifica la solución del desafío"
-      }
-    }
+        description: 'Archivo de tests para JavaScript que verifica la solución del desafío',
+      },
+    },
   },
   { timestamps: true }
 );

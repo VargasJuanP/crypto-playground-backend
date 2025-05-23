@@ -2,6 +2,7 @@ const UserSubModule = require('../models/UserSubModule');
 const SubModule = require('../models/SubModule');
 
 const ModuleService = require('./moduleService');
+const UserService = require('./userService');
 
 exports.createSubModule = async (subModuleData) => {
   return await SubModule.create(subModuleData);
@@ -54,7 +55,10 @@ exports.completeSubModule = async (user, subModule) => {
     const module = (await SubModule.findById(subModule)).module;
 
     // Actualizar progreso del modulo
-    ModuleService.updateModuleProgress(user, module);
+    await ModuleService.updateModuleProgress(user, module);
+
+    // Actualizar racha
+    await UserService.updateUserStreak(user);
   }
 
   return userSubModule;
@@ -67,24 +71,24 @@ exports.getUserSubModulesByModuleId = async (user, module) => {
 };
 
 exports.getFullSubModulesByModuleId = async (user, module) => {
-  const userSubModules = await this.getUserSubModulesByModuleId(user, module); 
+  const userSubModules = await this.getUserSubModulesByModuleId(user, module);
   const subModules = await this.getSubModulesByModuleId(module);
 
   const userSubModulesMap = {};
-  userSubModules.forEach(userSubModule => {
+  userSubModules.forEach((userSubModule) => {
     userSubModulesMap[userSubModule.subModule.toString()] = userSubModule;
   });
 
-  const combinedSubModules = subModules.map(subModule => {
+  const combinedSubModules = subModules.map((subModule) => {
     const subModuleId = subModule._id.toString();
     const userSubModule = userSubModulesMap[subModuleId];
-    
+
     return {
       id: subModule._id,
       module: subModule.module,
       title: subModule.title,
       place: subModule.place,
-      status: userSubModule.status
+      status: userSubModule.status,
     };
   });
 

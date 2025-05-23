@@ -6,13 +6,10 @@ const streamifier = require('streamifier');
 const ModuleService = require('./moduleService');
 
 const User = require('../models/User');
-const UserChallenge = require('../models/UserChallenge');
-const UserSubModule = require('../models/UserSubModule');
 
 const bcrypt = require('bcryptjs');
 
 exports.updateUser = async (userId, userData) => {
-  
   if (userData.password) {
     const salt = await bcrypt.genSalt(10);
     userData.password = await bcrypt.hash(userData.password, salt);
@@ -42,7 +39,16 @@ exports.updateGlobalProgress = async (user) => {
 
   const completados = modules.filter((m) => m.status === 'completado').length;
 
-  return await this.updateUser(user, { globalProgress: Math.round((completados / modules.length) * 100) });
+  const globalProgress = Math.round((completados / modules.length) * 100);
+
+  let level = 'Principiante';
+  if (globalProgress >= 70) {
+    level = 'Avanzado';
+  } else if (globalProgress >= 35) {
+    level = 'Intermedio';
+  }
+
+  return await this.updateUser(user, { globalProgress, level });
 };
 
 exports.getUserModules = async (user) => {
@@ -73,83 +79,6 @@ exports.getUserModules = async (user) => {
   return combinedModules;
 };
 
-// Reemplazar el método getUserSubModules en userService.js por esta versión:
-exports.getUserSubModules = async (userId, moduleId = null) => {
-  // Si se especifica moduleId, obtener los submódulos de ese módulo
-  let moduleSubModules = [];
-  if (moduleId) {
-    const module = await Module.findById(moduleId).populate('subModules');
-    if (module && module.subModules) {
-      moduleSubModules = module.subModules;
-    }
-  } else {
-    // Si no se especifica moduleId, obtener todos los módulos y sus submódulos
-    const modules = await Module.find().populate('subModules');
-    moduleSubModules = modules.reduce((acc, module) => {
-      return acc.concat(
-        module.subModules.map((sm) => ({
-          subModule: sm,
-          moduleId: module._id,
-          moduleTitle: module.title,
-          moduleOrder: module.order,
-        }))
-      );
-    }, []);
-  }
-
-  // Obtener información de usuario para cada submódulo
-  const userSubModules = await UserSubModule.find({
-    userId,
-    ...(moduleId ? { moduleId } : {}),
-  }).lean();
-
-  const userSubModulesMap = {};
-  userSubModules.forEach((usm) => {
-    userSubModulesMap[usm.subModuleId.toString()] = usm;
-  });
-
-  // Combinar información y devolver
-  if (moduleId) {
-    return moduleSubModules
-      .map((sm) => {
-        const userSM = userSubModulesMap[sm._id.toString()];
-        return {
-          id: sm._id,
-          title: sm.title,
-          order: sm.order,
-          content: sm.content,
-          moduleId: moduleId,
-          status: userSM ? userSM.status : 'not-started',
-          startDate: userSM ? userSM.startDate : null,
-          completionDate: userSM ? userSM.completionDate : null,
-          lastActivity: userSM ? userSM.lastActivity : null,
-        };
-      })
-      .sort((a, b) => a.order - b.order);
-  } else {
-    return moduleSubModules
-      .map(({ subModule, moduleId, moduleTitle, moduleOrder }) => {
-        const userSM = userSubModulesMap[subModule._id.toString()];
-        return {
-          id: subModule._id,
-          title: subModule.title,
-          order: subModule.order,
-          content: subModule.content,
-          moduleId: moduleId,
-          moduleTitle: moduleTitle,
-          moduleOrder: moduleOrder,
-          status: userSM ? userSM.status : 'not-started',
-          startDate: userSM ? userSM.startDate : null,
-          completionDate: userSM ? userSM.completionDate : null,
-          lastActivity: userSM ? userSM.lastActivity : null,
-        };
-      })
-      .sort((a, b) =>
-        a.moduleOrder !== b.moduleOrder ? a.moduleOrder - b.moduleOrder : a.order - b.order
-      );
-  }
-};
-
 exports.deleteUser = async (userId) => {
   const user = await User.findById(userId);
 
@@ -158,9 +87,7 @@ exports.deleteUser = async (userId) => {
   }
 
   // Eliminar todos los datos relacionados
-  await Promise.all([
-    User.findByIdAndDelete(userId),
-  ]);
+  await Promise.all([User.findByIdAndDelete(userId)]);
 
   return { message: 'Usuario eliminado con éxito' };
 };
@@ -243,4 +170,48 @@ exports.uploadProfileImage = async (userId, file) => {
   } catch (err) {
     throw error('Error al subir la imagen', 500);
   }
+};
+
+exports.updateUserStreak = async (userId) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw error('Usuario no encontrado', 404);
+  }
+
+  const lastActivityDate = new Date(user.lastActivity);
+  const currentDate = new Date();
+
+  s;
+  const lastActivityDay = new Date(
+    lastActivityDate.getFullYear(),
+    lastActivityDate.getMonth(),
+    lastActivityDate.getDate()
+  );
+
+  const currentDay = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate()
+  );
+
+  const diffTime = currentDay.getTime() - lastActivityDay.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  let newStreak = user.streak;
+
+  // Si la última actividad fue exactamente ayer, incrementar streak
+  if (diffDays === 1) {
+    newStreak += 1;
+  }
+  // Si pasó más de un día y el streak no es 0, resetear a 0
+  else if (diffDays > 1 && user.streak > 0) {
+    newStreak = 0;
+  }
+
+  // Actualizar el usuario con el nuevo streak y la fecha de última actividad
+  return await this.updateUser(userId, {
+    streak: newStreak,
+    lastActivity: currentDate,
+  });
 };

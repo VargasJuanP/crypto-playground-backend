@@ -4,7 +4,11 @@ const router = express.Router();
 const challengeController = require('../controllers/challengeController');
 const auth = require('../middleware/auth');
 const { isAdmin } = require('../middleware/roleValidator');
-const { createChallengeValidator, updateChallengeValidator, submitChallengeValidator } = require('../middleware/validators/challengeValidator');
+const {
+  createChallengeValidator,
+  updateChallengeValidator,
+  submitChallengeValidator,
+} = require('../middleware/validators/challengeValidator');
 
 // Rutas administrativas
 router.post('/', auth, isAdmin, createChallengeValidator, challengeController.createChallenge);
