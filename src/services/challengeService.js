@@ -19,7 +19,7 @@ exports.updateChallenge = async (challengeId, challengeData) => {
 };
 
 exports.getChallengeById = async (challengeId, userId) => {
-  const challenge = await Challenge.findById(challengeId);
+  const challenge = await Challenge.findById(challengeId).select('-tests');;
 
   if (!challenge) {
     throw new Error('Desafío no encontrado');
