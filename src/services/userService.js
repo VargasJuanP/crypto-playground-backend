@@ -214,3 +214,7 @@ exports.updateUserStreak = async (userId) => {
     lastActivity: currentDate,
   });
 };
+
+exports.addPointsToUser = async (userId, points) => {
+  return await User.findByIdAndUpdate(userId, { $inc: { points } });
+};

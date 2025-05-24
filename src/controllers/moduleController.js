@@ -1,4 +1,6 @@
 const moduleService = require('../services/moduleService');
+const challengeService = require('../services/challengeService');
+
 const { validationResult } = require('express-validator');
 const { success } = require('../utils/responseFormatter');
 
@@ -71,6 +73,16 @@ exports.completeModule = async (req, res, next) => {
     const userModule = await moduleService.completeModule(req.user.id, req.params.id);
 
     res.status(200).json(success(userModule, 'Módulo completado con éxito'));
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getChallenge = async (req, res, next) => {
+  try {
+    const userModule = await challengeService.getChallengeByModule(req.user.id, req.params.id);
+
+    res.status(200).json(success(userModule, 'Challenge obtenido con éxito'));
   } catch (err) {
     next(err);
   }

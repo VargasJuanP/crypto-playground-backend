@@ -1,4 +1,3 @@
-// models/UserChallenge.js
 const mongoose = require('mongoose');
 
 const UserChallengeSchema = new mongoose.Schema(

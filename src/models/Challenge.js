@@ -14,7 +14,11 @@ const ChallengeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    description: {
+    description1: {
+      type: String,
+      required: true,
+    },
+    description2: {
       type: String,
       required: true,
     },
@@ -72,6 +76,14 @@ const ChallengeSchema = new mongoose.Schema(
         description: 'Archivo de tests para JavaScript que verifica la solución del desafío',
       },
     },
+    icon: {
+      type: String,
+      required: true,
+    },
+    module: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Module',
+    },
   },
   { timestamps: true }
 );
@@ -80,5 +92,6 @@ ChallengeSchema.index({ difficulty: 1 });
 ChallengeSchema.index({ category: 1 });
 ChallengeSchema.index({ status: 1 });
 ChallengeSchema.index({ points: 1 });
+ChallengeSchema.index({ module: 1 });
 
 module.exports = mongoose.model('Challenge', ChallengeSchema);

@@ -3,6 +3,7 @@ const UserModule = require('../models/UserModule');
 
 const SubModuleService = require('./submoduleService');
 const UserService = require('./userService');
+const ChallengeService = require('./challengeService');
 
 exports.createModule = async (moduleData) => {
   return await Module.create(moduleData);
@@ -126,4 +127,8 @@ exports.updateModuleProgress = async (user, module) => {
   return await this.updateUserModule(user, module, {
     progress: Math.round((completados / subModules.length) * 100),
   });
+};
+
+exports.getModuleChallenge = async (module) => {
+  return await ChallengeService.findOne({ module });
 };

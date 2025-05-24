@@ -54,15 +54,6 @@ exports.getChallenges = async (req, res, next) => {
   }
 };
 
-exports.startChallenge = async (req, res, next) => {
-  try {
-    const userChallenge = await challengeService.startChallenge(req.user.id, req.params.id);
-    res.status(200).json(success(userChallenge, 'Desafío iniciado con éxito'));
-  } catch (err) {
-    next(err);
-  }
-};
-
 exports.submitChallenge = async (req, res, next) => {
   try {
     const errors = validationResult(req);

@@ -1,10 +1,12 @@
-// middleware/validators/challengeValidator.js
+const mongoose = require('mongoose');
+
 const { body, param } = require('express-validator');
 
 exports.createChallengeValidator = [
   body('id').isString().notEmpty().withMessage('El ID del desafío es requerido'),
   body('title').isString().notEmpty().withMessage('El título es requerido'),
-  body('description').isString().notEmpty().withMessage('La descripción es requerida'),
+  body('description1').isString().notEmpty().withMessage('La descripción 1 es requerida'),
+  body('description2').isString().notEmpty().withMessage('La descripción 2 es requerida'),
   body('difficulty')
     .isIn(['principiante', 'intermedio', 'avanzado', 'experto'])
     .withMessage('Dificultad no válida'),
@@ -25,16 +27,25 @@ exports.createChallengeValidator = [
   body('starterCode.javascript').optional().isString(),
   body('tests.python').isString().withMessage('Los tests para Python son requeridos'),
   body('tests.javascript').isString().withMessage('Los tests para JavaScript son requeridos'),
+  body('icon').isString(),
+  body('module')
+    .optional()
+    .custom((value) => mongoose.Types.ObjectId.isValid(value)),
 ];
 
 exports.updateChallengeValidator = [
   param('id').isMongoId().withMessage('ID de desafío no válido'),
   body('title').optional().isString().notEmpty().withMessage('El título no puede estar vacío'),
-  body('description')
+  body('description1')
     .optional()
     .isString()
     .notEmpty()
-    .withMessage('La descripción no puede estar vacía'),
+    .withMessage('La descripción 1 no puede estar vacía'),
+  body('description2')
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage('La descripción 2 no puede estar vacía'),
   body('difficulty')
     .optional()
     .isIn(['principiante', 'intermedio', 'avanzado', 'experto'])
@@ -61,6 +72,10 @@ exports.updateChallengeValidator = [
   body('constraints').optional().isArray().withMessage('Las restricciones deben ser un array'),
   body('tests.python').optional().isString(),
   body('tests.javascript').optional().isString(),
+  body('icon').optional().isString(),
+  body('module')
+    .optional()
+    .custom((value) => mongoose.Types.ObjectId.isValid(value)),
 ];
 
 exports.submitChallengeValidator = [

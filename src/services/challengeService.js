@@ -1,7 +1,7 @@
 const Challenge = require('../models/Challenge');
 const UserChallenge = require('../models/UserChallenge');
 const axios = require('axios');
-const userChallengeService = require('./userChallengeService');
+const UserService = require('./userService');
 
 // URL de la API de Piston
 const PISTON_API_URL = 'https://emkc.org/api/v2/piston/execute';
@@ -32,12 +32,15 @@ exports.getChallengeById = async (challengeId, userId) => {
     ...challenge.toObject(),
     userStatus: userChallenge ? userChallenge.status : 'no-iniciado',
     attempts: userChallenge ? userChallenge.attempts : 0,
+    code: userChallenge ? userChallenge.lastSubmittedCode : '',
   };
 };
 
 exports.getChallenges = async (userId, filters = {}) => {
   // Construir filtros para la consulta
-  const queryFilters = {};
+  const queryFilters = {
+    module: { $exists: false },
+  };
 
   if (filters.category) queryFilters.category = filters.category;
   if (filters.difficulty) queryFilters.difficulty = filters.difficulty;
@@ -62,7 +65,7 @@ exports.getChallenges = async (userId, filters = {}) => {
     return {
       id: challenge._id,
       title: challenge.title,
-      description: challenge.description,
+      description: challenge.description1,
       difficulty: challenge.difficulty,
       category: challenge.category,
       completions: challenge.completions,
@@ -77,30 +80,8 @@ exports.getChallenges = async (userId, filters = {}) => {
   });
 };
 
-exports.startChallenge = async (userId, challengeId) => {
-  const challenge = await Challenge.findById(challengeId);
-  if (!challenge) {
-    throw new Error('Desafío no encontrado');
-  }
-
-  // Buscar o crear un registro de UserChallenge
-  let userChallenge = await UserChallenge.findOne({ user: userId, challenge: challengeId });
-
-  if (!userChallenge) {
-    userChallenge = await UserChallenge.create({
-      user: userId,
-      challenge: challengeId,
-      status: 'en-progreso',
-    });
-  } else if (userChallenge.status === 'no-iniciado') {
-    userChallenge.status = 'en-progreso';
-    await userChallenge.save();
-  }
-
-  return userChallenge;
-};
-
 exports.submitChallenge = async (userId, challengeId, code, language) => {
+  await UserService.updateUserStreak(userId);
   // Validar el lenguaje
   if (!['python', 'javascript'].includes(language)) {
     throw new Error('Lenguaje no soportado');
@@ -122,13 +103,11 @@ exports.submitChallenge = async (userId, challengeId, code, language) => {
       status: 'en-progreso',
       attempts: 1,
       lastAttemptAt: new Date(),
-      lastSubmittedCode: code,
       language,
     });
   } else {
     userChallenge.attempts += 1;
     userChallenge.lastAttemptAt = new Date();
-    userChallenge.lastSubmittedCode = code;
     userChallenge.language = language;
     await userChallenge.save();
   }
@@ -141,70 +120,36 @@ exports.submitChallenge = async (userId, challengeId, code, language) => {
 
   // Si el código pasa todas las pruebas
   if (pistonResponse.success) {
+    userChallenge.lastSubmittedCode = code;
     // Marcar como completado si no lo estaba ya
     if (userChallenge.status !== 'completado') {
       userChallenge.status = 'completado';
       userChallenge.completedAt = new Date();
-      await userChallenge.save();
-
       // Incrementar el contador de completados
       await Challenge.findByIdAndUpdate(challengeId, { $inc: { completions: 1 } });
+      // Sumar puntos al usuario
+      await UserService.addPointsToUser(userId, challenge.points);
     }
+
+    await userChallenge.save();
   }
 
   return pistonResponse;
 };
 
-// services/challengeService.js - Actualización de la función executePistonCode
-
-// services/challengeService.js - Actualización de la función executePistonCode
-
 exports.executePistonCode = async (code, language, challenge, userChallenge) => {
-  // Verificar las versiones disponibles de runtimes en Piston API
-  // El error muestra que nodejs-18.15.0 no está disponible
   const languageConfig = {
     python: {
       language: 'python3',
-      version: '3.10.0', // Cambiado de 3.10.0 a una versión más común
+      version: '3.10.0',
     },
     javascript: {
       language: 'javascript',
-      version: '18.15.0', // Cambiado de 18.15.0 a una versión más estable y común
+      version: '18.15.0',
     },
   };
 
-  // Código de la solución modificado para garantizar la salida correcta
-  let processedCode = code;
-
-  // Tests modificados para garantizar que impriman la salida esperada
-  let processedTests = challenge.tests[language];
-
-  if (language === 'python') {
-    // Asegurarse de que los tests de Python impriman "SUCCESS" claramente
-    if (!processedTests.includes('print("SUCCESS")')) {
-      processedTests = processedTests.replace(
-        'if result.wasSuccessful():',
-        'if result.wasSuccessful():\n        print("SUCCESS")'
-      );
-    }
-  } else if (language === 'javascript') {
-    // Asegurarse de que el código JS exporte la función
-    if (!processedCode.includes('module.exports')) {
-      processedCode = processedCode + '\n\nmodule.exports = { solution };';
-    }
-
-    // Asegurarse de que los tests de JS impriman "SUCCESS" claramente
-    if (!processedTests.includes('console.log("SUCCESS")')) {
-      processedTests = processedTests.replace(
-        'if (success) {',
-        'if (success) {\n  console.log("SUCCESS");'
-      );
-    }
-  }
-
-  // Preparar nombres de archivos
-  const mainFileName = language === 'python' ? 'main.py' : 'main.js';
-  const testFileName = language === 'python' ? 'test.py' : 'test.js';
+  const main = language === 'python' ? 'main.py' : 'main.js';
 
   // Configurar payload para Piston API
   const payload = {
@@ -212,12 +157,8 @@ exports.executePistonCode = async (code, language, challenge, userChallenge) => 
     version: languageConfig[language].version,
     files: [
       {
-        name: mainFileName,
-        content: processedCode,
-      },
-      {
-        name: testFileName,
-        content: processedTests,
+        name: main,
+        content: code + '\n' + challenge.tests[language],
       },
     ],
     stdin: challenge.inputData || '',
@@ -229,14 +170,7 @@ exports.executePistonCode = async (code, language, challenge, userChallenge) => 
   };
 
   try {
-    console.log(
-      `Enviando solicitud a Piston API para ${language}:`,
-      JSON.stringify(payload, null, 2)
-    );
-
-    // Ejecutar el código con Piston API
     const response = await axios.post(PISTON_API_URL, payload);
-    console.log('Respuesta de Piston API:', JSON.stringify(response.data, null, 2));
 
     // Analizar la respuesta
     const { stdout, stderr, code: exitCode, signal } = response.data.run;
@@ -255,8 +189,6 @@ exports.executePistonCode = async (code, language, challenge, userChallenge) => 
       };
     }
 
-    // Verificar si el código pasa las pruebas
-    // Buscar explícitamente "SUCCESS" en la salida
     const testsPassed = stdout.includes('SUCCESS');
 
     return {
@@ -274,10 +206,8 @@ exports.executePistonCode = async (code, language, challenge, userChallenge) => 
     try {
       // URL alternativa de Piston API
       const ALTERNATIVE_PISTON_API = 'https://piston.dev/api/v2/execute';
-      console.log('Intentando con API alternativa:', ALTERNATIVE_PISTON_API);
 
       const altResponse = await axios.post(ALTERNATIVE_PISTON_API, payload);
-      console.log('Respuesta de API alternativa:', JSON.stringify(altResponse.data, null, 2));
 
       const { stdout, stderr, code: exitCode } = altResponse.data.run;
 
@@ -318,7 +248,6 @@ exports.executePistonCode = async (code, language, challenge, userChallenge) => 
   }
 };
 
-// services/userChallengeService.js (continuación)
 exports.createUserChallenge = async (userId, challengeId) => {
   return await UserChallenge.create({
     user: userId,
@@ -328,12 +257,6 @@ exports.createUserChallenge = async (userId, challengeId) => {
 };
 
 exports.updateUserChallengeStatus = async (userId, challengeId, status) => {
-  const validStatuses = ['no-iniciado', 'en-progreso', 'completado'];
-
-  if (!validStatuses.includes(status)) {
-    throw new Error('Estado no válido');
-  }
-
   const updates = { status };
 
   if (status === 'completado') {
@@ -364,4 +287,10 @@ exports.incrementAttempt = async (userId, challengeId, code, language) => {
 
 exports.getUserChallengeByIds = async (userId, challengeId) => {
   return await UserChallenge.findOne({ user: userId, challenge: challengeId });
+};
+
+exports.getChallengeByModule = async (user, module) => {
+  const challenge = await Challenge.findOne({ module });
+
+  return await this.getChallengeById(challenge._id, user);
 };

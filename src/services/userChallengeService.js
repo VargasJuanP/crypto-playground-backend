@@ -1,4 +1,3 @@
-// services/userChallengeService.js
 const UserChallenge = require('../models/UserChallenge');
 const Challenge = require('../models/Challenge');
 

@@ -19,4 +19,6 @@ router.post('/:id/start', auth, moduleController.startModule);
 
 router.post('/:id/complete', auth, moduleController.completeModule);
 
+router.get('/:id/challenge', auth, moduleController.getChallenge);
+
 module.exports = router;

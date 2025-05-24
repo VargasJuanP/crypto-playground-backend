@@ -17,7 +17,6 @@ router.put('/:id', auth, isAdmin, updateChallengeValidator, challengeController.
 // Rutas para usuarios
 router.get('/', auth, challengeController.getChallenges);
 router.get('/:id', auth, challengeController.getChallenge);
-router.post('/:id/start', auth, challengeController.startChallenge);
 router.post('/:id/submit', auth, submitChallengeValidator, challengeController.submitChallenge);
 
 module.exports = router;
