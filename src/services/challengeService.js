@@ -74,6 +74,7 @@ exports.getChallenges = async (userId, filters = {}) => {
       timeEstimate: challenge.timeEstimate,
       status: challenge.status,
       icon: challenge.icon,
+      createdAt: challenge.createdAt,
       userStatus: userChallenge ? userChallenge.status : 'no-iniciado',
       attempts: userChallenge ? userChallenge.attempts : 0,
     };
