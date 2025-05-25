@@ -92,9 +92,9 @@ exports.deleteUser = async (userId) => {
   // Eliminar todos los datos relacionados
   await Promise.all([
     User.findByIdAndDelete(userId),
-    UserModule.deleteMany({ userId }),
-    UserSubModule.deleteMany({ userId }),
-    UserChallenge.deleteMany({ userId }),
+    UserModule.deleteMany({ user: userId }),
+    UserSubModule.deleteMany({ user: userId }),
+    UserChallenge.deleteMany({ user: userId }),
   ]);
 
   return { message: 'Usuario eliminado con éxito' };
