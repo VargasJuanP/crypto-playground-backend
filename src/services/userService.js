@@ -6,6 +6,9 @@ const streamifier = require('streamifier');
 const ModuleService = require('./moduleService');
 
 const User = require('../models/User');
+const UserModule = require('../models/UserModule');
+const UserSubModule = require('../models/UserSubModule');
+const UserChallenge = require('../models/UserChallenge');
 
 const bcrypt = require('bcryptjs');
 
@@ -87,7 +90,12 @@ exports.deleteUser = async (userId) => {
   }
 
   // Eliminar todos los datos relacionados
-  await Promise.all([User.findByIdAndDelete(userId)]);
+  await Promise.all([
+    User.findByIdAndDelete(userId),
+    UserModule.deleteMany({ userId }),
+    UserSubModule.deleteMany({ userId }),
+    UserChallenge.deleteMany({ userId }),
+  ]);
 
   return { message: 'Usuario eliminado con éxito' };
 };
@@ -202,17 +210,19 @@ exports.updateUserStreak = async (userId) => {
   // Si la última actividad fue exactamente ayer, incrementar streak
   if (diffDays === 1) {
     newStreak += 1;
+    await this.updateUser(userId, {
+      streak: newStreak,
+      lastActivity: currentDate,
+    });
   }
   // Si pasó más de un día y el streak no es 0, resetear a 0
   else if (diffDays > 1 && user.streak > 0) {
     newStreak = 0;
+    await this.updateUser(userId, {
+      streak: newStreak,
+      lastActivity: currentDate,
+    });
   }
-
-  // Actualizar el usuario con el nuevo streak y la fecha de última actividad
-  return await this.updateUser(userId, {
-    streak: newStreak,
-    lastActivity: currentDate,
-  });
 };
 
 exports.addPointsToUser = async (userId, points) => {
